@@ -1,30 +1,28 @@
-from fastapi import FastAPI
-from pydantic import BaseModel
+import os
 import json
 import requests
+from fastapi import FastAPI
+from pydantic import BaseModel
 
 app = FastAPI()
 
+INTERNAL_API_KEY = os.getenv("INTERNAL_API_KEY")
+
 class LogPayload(BaseModel):
-    pipeline: str
-    status: str
-    log: str
+    pass
 
 @app.post("/logs")
 def receive_logs(payload: LogPayload):
-    # Store logs locally
     with open("logs.jsonl", "a") as f:
         f.write(json.dumps(payload.dict()) + "\n")
 
-    # Trigger failure analyzer service
-    try:
-        requests.post(
-            "http://failure-analyzer:8001/analyze",
-            json=payload.dict(),
-            timeout=2
-        )
-    except Exception as e:
-        # Do NOT fail log-collector if analyzer is down
-        print(f"[WARN] Failure analyzer not reachable: {e}")
+    headers = {"x-api-key": INTERNAL_API_KEY}
+
+    requests.post(
+        "http://failure-analyzer:8001/analyze",
+        json=payload.dict(),
+        headers=headers,
+        timeout=5
+    )
 
     return {"message": "log stored + analysis triggered"}

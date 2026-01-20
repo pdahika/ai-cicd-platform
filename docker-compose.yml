@@ -13,6 +13,8 @@ services:
   failure-analyzer:
     build: ./services/failure-analyzer
     container_name: failure-analyzer
+    ports:
+      - "8001:8001"
     env_file:
       - .env
     depends_on:
@@ -22,11 +24,23 @@ services:
   fix-generator:
     build: ./services/fix-generator
     container_name: fix-generator
+    ports:
+      - "8002:8002"
     env_file:
       - .env
-    volumes:
-      - ./data:/data
     depends_on:
       - failure-analyzer
+    volumes:
+      - ./data:/data
     restart: always
 
+  action-executor:
+    build: ./services/action-executor
+    container_name: action-executor
+    ports:
+      - "8003:8003"
+    env_file:
+      - .env
+    depends_on:
+      - fix-generator
+    restart: always

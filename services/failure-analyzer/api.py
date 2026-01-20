@@ -1,19 +1,43 @@
-from fastapi import FastAPI
+import requests
+import os
+from similarity import find_similar
+from fastapi import FastAPI, Depends
+from fastapi.security import HTTPBearer, HTTPAuthCredentials
 from pydantic import BaseModel
-from analyzer import find_similar
 
 app = FastAPI()
+security = HTTPBearer()
 
 class FailurePayload(BaseModel):
-    pipeline: str
-    status: str
     log: str
 
+def verify_token(credentials: HTTPAuthCredentials = Depends(security)):
+    token = credentials.credentials
+    if token != os.getenv("API_TOKEN"):
+        raise ValueError("Invalid token")
+    return token
+
+INTERNAL_API_KEY = os.getenv("INTERNAL_API_KEY")
+
 @app.post("/analyze")
-def analyze(payload: FailurePayload):
+def analyze(payload: FailurePayload, auth=Depends(verify_token)):
     match = find_similar(payload.log)
 
-    if match:
-        return {"action": "known_fix", "fix": match}
+    headers = {"x-api-key": INTERNAL_API_KEY}
 
-    return {"action": "generate_fix"}
+    if match:
+        requests.post(
+            "http://action-executor:8003/execute",
+            json=match,
+            headers=headers
+        )
+        return {"action": "known_fix_applied"}
+
+    requests.post(
+        "http://fix-generator:8002/generate",
+        json={"log": payload.log},
+        headers=headers
+    )
+
+    return {"action": "fix_generation_triggered"}
+
