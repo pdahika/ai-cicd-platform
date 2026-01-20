@@ -1,0 +1,6 @@
+logCollector:
+  image: log-collector:latest
+failureAnalyzer:
+  image: failure-analyzer:latest
+fixGenerator:
+  image: fix-generator:latest

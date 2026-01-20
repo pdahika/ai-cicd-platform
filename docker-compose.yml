@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  log-collector:
+    build: ./services/log-collector
+    container_name: log-collector
+    ports:
+      - "9000:9000"
+    env_file:
+      - .env
+    restart: always
+
+  failure-analyzer:
+    build: ./services/failure-analyzer
+    container_name: failure-analyzer
+    env_file:
+      - .env
+    depends_on:
+      - log-collector
+    restart: always
+
+  fix-generator:
+    build: ./services/fix-generator
+    container_name: fix-generator
+    env_file:
+      - .env
+    volumes:
+      - ./data:/data
+    depends_on:
+      - failure-analyzer
+    restart: always
+

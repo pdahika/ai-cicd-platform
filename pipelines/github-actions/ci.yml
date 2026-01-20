@@ -1,0 +1,34 @@
+name: CI Pipeline
+
+on: [push]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.10
+
+      - name: Install deps
+        run: |
+          cd sample-app/demo-microservice
+          pip install flask pytest
+
+      - name: Run tests
+        run: |
+          cd sample-app/demo-microservice
+          pytest 2>&1 | tee test.log || true
+
+      - name: Send logs to AI Platform
+        run: |
+          curl -X POST http://log-collector:9000/logs \
+          -H "Content-Type: application/json" \
+          -d @<(jq -n \
+            --arg pipeline "ci" \
+            --arg status "failed" \
+            --arg log "$(cat sample-app/demo-microservice/test.log)" \
+            '{pipeline:$pipeline,status:$status,log:$log}')

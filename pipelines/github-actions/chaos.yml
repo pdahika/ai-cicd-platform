@@ -1,0 +1,6 @@
+- name: Chaos step
+  run: |
+    if [ $((RANDOM % 2)) -eq 0 ]; then
+      echo "Chaos failure"
+      exit 1
+    fi

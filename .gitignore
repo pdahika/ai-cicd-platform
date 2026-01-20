@@ -1,0 +1,44 @@
+# Environment files
+.env
+.env.*
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+
+# Node
+node_modules/
+
+# Logs
+*.log
+logs.jsonl
+audit.log
+
+# Vector DB
+*.index
+*.faiss
+
+# OS
+.DS_Store
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.backup
+
+# Kubernetes
+*.secret.yaml
+
+# Docker
+*.tar
+
+# IDE
+.vscode/
+.idea/
+
+# Test artifacts
+test.log
